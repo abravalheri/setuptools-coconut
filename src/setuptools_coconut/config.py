@@ -1,4 +1,3 @@
-import sys
 from os.path import exists, join
 from typing import List, Optional, Tuple, Type, TypeVar, Union, cast
 
@@ -6,12 +5,6 @@ import pydantic
 import tomli
 
 from . import debug
-
-if sys.version_info[:2] >= (3, 8):
-    pass
-else:
-    pass
-
 
 T = TypeVar("T", bound="CoconutConfig")
 
@@ -107,7 +100,7 @@ class CoconutConfig(pydantic.BaseModel, frozen=True):
         """
         coconut_config = None
         if file and exists(file):
-            with open(file, "rb", encoding="utf-8") as f:
+            with open(file, "rb") as f:
                 config = tomli.load(f)
             coconut_config = config.get("tool", {}).get(TOOL_NAME, None)
         else:

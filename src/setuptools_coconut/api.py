@@ -1,14 +1,15 @@
 import os
+import sys
 from functools import lru_cache
 from glob import glob
 from os.path import abspath, dirname, exists, join, relpath
+from subprocess import STDOUT, CalledProcessError, check_output
 from typing import Iterable, Optional
-
-from coconut import convenience as _coconut
 
 from . import debug
 from .config import DEFAULT_CONFIG_FILE, CoconutConfig, ValidationError
 
+EXECUTABLE = (sys.executable, "-m", "coconut")
 PROJECT_MARKERS = ("pyproject.toml", "setup.cfg", ".git", ".hg")
 
 
@@ -41,7 +42,15 @@ def compile(project_root: str, config: CoconutConfig) -> Iterable[str]:
         dest_root = join(project_root, config.build_path(src))
         src_root = join(project_root, src)
         debug.print("coconut", src, dest, *opts)
-        _coconut.cmd([src_root, dest_root, *opts])
+        try:
+            check_output(
+                [*EXECUTABLE, src_root, dest_root, *opts],
+                stderr=STDOUT,
+                universal_newlines=True,
+            )
+        except CalledProcessError as ex:
+            print(debug.format("Error while compiling:\n", ex.output))
+            raise
         yield abspath(dest).rstrip(os.pathsep)
 
 
