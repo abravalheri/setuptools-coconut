@@ -1,3 +1,4 @@
+import os
 from os.path import exists, join
 from typing import List, Optional, Tuple, Type, TypeVar, Union, cast
 
@@ -7,12 +8,13 @@ import tomli
 from . import debug
 
 T = TypeVar("T", bound="CoconutConfig")
+PathLike = Union[str, os.PathLike]
 
 DEFAULT_CONFIG_FILE = "pyproject.toml"
 TOOL_NAME = "coconut"
 
 
-class CoconutConfig(pydantic.BaseModel, frozen=True):
+class CoconutConfig(pydantic.BaseModel, frozen=True, extra=pydantic.Extra.forbid):
     """Options that will be passed to the ``coconut`` compiler.
 
     For more information, please check `coconut docs
@@ -91,7 +93,7 @@ class CoconutConfig(pydantic.BaseModel, frozen=True):
         return join(self.dest, src)
 
     @classmethod
-    def from_file(cls: Type[T], file: str) -> Optional[T]:
+    def from_file(cls: Type[T], file: PathLike) -> Optional[T]:
         """Reads the configuration from a file in the same format as ``pyproject.toml``
         (:pep:`518`).
 
@@ -103,7 +105,7 @@ class CoconutConfig(pydantic.BaseModel, frozen=True):
             with open(file, "rb") as f:
                 config = tomli.load(f)
             coconut_config = config.get("tool", {}).get(TOOL_NAME, None)
-        else:
+        else:  # pragma: no cover
             debug.print(f"No configuration file: `{file}`")
             return None
 
@@ -120,7 +122,7 @@ class CoconutConfig(pydantic.BaseModel, frozen=True):
 class ValidationError(pydantic.ValidationError):
     __slots__ = ("file", "__cause__")
 
-    def __init__(self, file: str, cause: pydantic.ValidationError):
+    def __init__(self, file: PathLike, cause: pydantic.ValidationError):
         super().__init__(cause.raw_errors, cause.model)
         self.file = file
         self.__cause__ = cause

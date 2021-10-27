@@ -1,0 +1,4 @@
+def factorial(0) = 1
+
+addpattern def factorial(n is int if n > 0) =
+    n * factorial(n - 1)

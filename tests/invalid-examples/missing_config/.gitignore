@@ -48,9 +48,6 @@ docs/_build/*
 cover/*
 MANIFEST
 
-tests/*/*/build/*
-tests/*/*/dist/*
-
 # Per-project virtualenvs
 .venv*/
 .conda*/

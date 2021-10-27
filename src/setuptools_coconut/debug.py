@@ -3,7 +3,7 @@ import sys
 
 from . import dist_name
 
-DEBUG = os.getenv("SETUPTOOLS_COCONUT_DEBUG") not in (None, "false")
+DEBUG = os.getenv("SETUPTOOLS_COCONUT_DEBUG") not in (None, "false", "0")
 LABEL = f"[{dist_name}]"
 INDENT = " " * (len(LABEL) + 1)
 
@@ -25,3 +25,8 @@ def print(*args):
 def inspect(arg):
     print(arg)
     return arg
+
+
+def lazy(fn, *args, **kwargs):
+    if DEBUG:
+        print(fn(*args, **kwargs))
