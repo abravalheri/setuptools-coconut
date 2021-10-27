@@ -1,0 +1,10 @@
+[build-system]
+requires = [
+  "setuptools>=42",
+  "setuptools-coconut",
+  "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.coconut]
+argv = ["--force"]
