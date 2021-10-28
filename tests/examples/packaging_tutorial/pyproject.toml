@@ -8,3 +8,5 @@ build-backend = "setuptools.build_meta"
 
 [tool.coconut]
 argv = ["--force"]
+src = ["src"]
+dest = "build"

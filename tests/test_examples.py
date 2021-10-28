@@ -93,6 +93,9 @@ def test_valid_examples(example, set_debug, monkeypatch):
         print("~_" * 40)
         raise
 
+    for f in distribution_files:
+        assert not f.endswith(".coco")
+
 
 @pytest.mark.parametrize(
     "example, set_debug", zip(invalid_examples(), cycle([False, True]))

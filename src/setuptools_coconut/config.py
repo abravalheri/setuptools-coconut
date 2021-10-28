@@ -1,6 +1,6 @@
 import os
 from os.path import exists, join
-from typing import List, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import pydantic
 import tomli
@@ -21,20 +21,31 @@ class CoconutConfig(pydantic.BaseModel, frozen=True, extra=pydantic.Extra.forbid
     <https://coconut.readthedocs.io/en/master/DOCS.html#compilation>`_
     """
 
-    src: Tuple[str] = ("src",)
-    """Folders containing ``.coco`` files to compile"""
+    src: Tuple[str, ...] = ("src",)
+    """Folders containing ``.coco`` files to compile."""
 
-    dest: str = "build"
+    dest: Optional[str] = None
     """Folder where the generated files will be placed.
+    If ``dest`` is not set, compiled files will live along side coconut files.
+    If ``dest`` is passed, each ``src`` folder will have a correspondent inside
+    of it:
 
     For example, if your configuration is:
 
     .. code-block:: toml
 
        src = ["src"]
+       dest = None   # default
+
+    then a ``src/module.coco`` file would be compiled into ``src/moldule.py``.
+    One the other hand, if your configuration is:
+
+    .. code-block:: toml
+
+       src = ["src"]
        dest = "build"
 
-    then a ``src/module.coco`` will be compiled into ``build/src/moldule.coco``
+    then a ``src/module.coco`` file would be compiled into ``build/src/moldule.py``.
     """
 
     strict: bool = True
@@ -73,8 +84,16 @@ class CoconutConfig(pydantic.BaseModel, frozen=True, extra=pydantic.Extra.forbid
     try to automatically detect the number of cores in the machine.
     """
 
-    argv: Tuple[str] = cast(Tuple[str], ())
-    """Extra arguments passed direcly to the ``coconut`` compilation script"""
+    argv: Tuple[str, ...] = ()
+    """Extra arguments passed directly to the ``coconut`` compilation script"""
+
+    @pydantic.validator("dest")
+    def dest_cannot_be_src(cls, v, values, **kwargs):
+        if any(v == src for src in values["src"]):
+            msg = "To avoid recursion `dest` cannot be the same as `src`. Given:\n"
+            msg += f"src = {list(values['src'])!r}\ndest = {v!r}"
+            raise ValueError("To avoid recursion `dest` cannot be the same as `src`")
+        return v
 
     def as_cli_args(self) -> List[str]:
         args = ["--target", self.target, "-j", str(self.processes)]
@@ -89,8 +108,10 @@ class CoconutConfig(pydantic.BaseModel, frozen=True, extra=pydantic.Extra.forbid
             args.extend(self.argv)
         return args
 
-    def build_path(self, src: str):
-        return join(self.dest, src)
+    def build_paths(self) -> Dict[str, str]:
+        if self.dest is None:
+            return {s: s for s in self.src}
+        return {s: join(self.dest, s) for s in self.src}
 
     @classmethod
     def from_file(cls: Type[T], file: PathLike) -> Optional[T]:
@@ -105,7 +126,7 @@ class CoconutConfig(pydantic.BaseModel, frozen=True, extra=pydantic.Extra.forbid
             with open(file, "rb") as f:
                 config = tomli.load(f)
             coconut_config = config.get("tool", {}).get(TOOL_NAME, None)
-        else:  # pragma: no cover
+        else:
             debug.print(f"No configuration file: `{file}`")
             return None
 

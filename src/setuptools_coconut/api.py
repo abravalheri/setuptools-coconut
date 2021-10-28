@@ -39,13 +39,12 @@ def compile(project_root: str, config: CoconutConfig) -> Iterable[str]:
     created.
     """
     opts = config.as_cli_args()
-    for src in config.src:
-        dest = config.build_path(src)
-        dest_root = join(project_root, config.build_path(src))
+    for src, dest in config.build_paths().items():
+        dest_root = join(project_root, dest)
         src_root = join(project_root, src)
         debug.print("coconut", src, dest, *opts)
         run_cmd([*EXECUTABLE, src_root, dest_root, *opts])
-        yield abspath(dest).rstrip(os.pathsep)
+        yield abspath(dest_root).rstrip(os.pathsep)
 
 
 def compiled_files(path: str = "") -> Iterable[str]:
@@ -79,9 +78,11 @@ def compiled_files(path: str = "") -> Iterable[str]:
 
     # We need to move non-compiled files to the build dir also
     # so users can use "package_data"
-    for src in config.src:
+    for src, dest in config.build_paths().items():
+        if src == dest:
+            continue
         other_files = OtherFiles(root, src)
-        for file in other_files.link_or_copy(config.build_path(src)):
+        for file in other_files.link_or_copy(dest):
             if file.replace(os.pathsep, "/").startswith(abs_path):
                 yield debug.inspect(relpath(file, path))
 
