@@ -48,10 +48,6 @@ docs/_build/*
 cover/*
 MANIFEST
 
-tests/*/*/build/*
-tests/*/*/dist/*
-tests/examples/with-datafiles-inplace-compile/src/with_datafiles/*.py
-
 # Per-project virtualenvs
 .venv*/
 .conda*/
