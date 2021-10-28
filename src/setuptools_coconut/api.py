@@ -148,7 +148,7 @@ def run_cmd(cmd):
             universal_newlines=True,
         )
     except CalledProcessError as ex:  # pragma: no cover
-        print(debug.format("Error while compiling:\n", ex.output))
+        print(debug.format("Error for command", " ".join(cmd), "\n", ex.output))
         raise
 
 

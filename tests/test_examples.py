@@ -1,12 +1,14 @@
+import sys
 from itertools import chain, cycle
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import Iterable
 
 import pytest
-from setuptools import build_meta as setuptools
 
 from setuptools_coconut import debug
-from setuptools_coconut.config import CoconutConfig, ValidationError
+from setuptools_coconut.api import run_cmd
+from setuptools_coconut.config import CoconutConfig
 
 from .helpers import list_zip, rmpath
 
@@ -39,7 +41,7 @@ def coconut_files(path: Path) -> Iterable[Path]:
 def other_files(path: Path) -> Iterable[Path]:
     src_path = path / "src"
     for p in src_path.glob("**/*"):
-        if p.is_file() and p.suffix != ".coco":
+        if p.is_file() and "egg-info" not in str(p) and p.suffix != ".coco":
             yield p.relative_to(src_path)
 
 
@@ -66,11 +68,9 @@ def build_project(path, monkeypatch, set_debug):
         m.chdir(path)
         if set_debug:
             m.setattr(debug, "DEBUG", True)
-        # For some reason some of the projects need to be build twice,
-        # so setuptools end up including all the files
-        # but `python -m build` seems to get it right
-        setuptools.build_wheel(path / "dist")
-        setuptools.build_wheel(path / "dist")
+        run_cmd([sys.executable, "-m", "build", "--no-isolation", "--wheel", "."])
+        # ^--- we use `--no-isolation` because that allow us to use the version
+        #      of `setuptools-coconut` under test
 
 
 @pytest.mark.parametrize("example, set_debug", zip(examples(), cycle([False, True])))
@@ -118,6 +118,7 @@ def test_invalid_examples(example, set_debug, monkeypatch):
             print("\n".join(sorted(compiled_and_included)))
             print("~_" * 40)
             raise
-    except ValidationError:
+    except CalledProcessError as ex:
         # Invalid files are expected to have validation errors
-        pass
+        error_text = (ex.stderr or "") + ex.stdout
+        assert "validation error" in error_text
