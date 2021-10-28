@@ -1,0 +1,21 @@
+{
+  "*.py": {
+    "autoformat": true,
+    "textwidth": 88
+  },
+  "src/setuptools_coconut/*/__init__.py" : {
+    "alternate": "tests/test_{basename}.py",
+    "type": "source"
+  },
+  "src/setuptools_coconut/*.py" : {
+    "alternate": "tests/{dirname}/test_{basename}.py",
+    "type": "source"
+  },
+  "tests/**/test_*.py" : {
+    "alternate": [
+      "src/setuptools_coconut/{dirname}/{basename}.py",
+      "src/setuptools_coconut/{dirname}/{basename}/__init__.py"
+    ],
+    "type": "test"
+  }
+}
