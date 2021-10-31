@@ -133,7 +133,6 @@ windows_task:
     )
   windows_container:
     image: "python:3.9-windowsservercore-1809"
-    os_version: 1809
   env:
     # Single quotes are used bellow to escape Windows backslash and % (YAML restrictions).
     PYTHON_HOME: 'C:\Python'
@@ -141,10 +140,11 @@ windows_task:
     # ^  update when python version changes
     GIT_HOME: 'C:\tools\GitForWindows.2.32.0.2\tools'
     # ^ update when git version changes
+    VS_BUILDTOOLS_HOME: 'C:\tools\Microsoft.VSSDK.BuildTools.16.11.35\tools\vssdk'
     HOME: '%USERPROFILE%'
     USERNAME: ContainerAdministrator
     # ^  ensure USERNAME is set in Windows, so the getpass module doesn't raise exceptions
-    PATH: '%HOME%\.local\bin\;%PYTHON_APPDATA%\Scripts\;%PYTHON_HOME%\;%PYTHON_HOME%\Scripts\;C:\tools\;%GIT_HOME%\cmd\;%PATH%'
+    PATH: '%HOME%\.local\bin\;%PYTHON_APPDATA%\Scripts\;%PYTHON_HOME%\;%PYTHON_HOME%\Scripts\;C:\tools\;%GIT_HOME%\cmd\;%VS_BUILDTOOLS_HOME\bin%;%PATH%'
     # ^  add user paths (if POSIX tools are needed you can try also adding %GIT_HOME\usr\bin\)
     PIP_CACHE: '%LocalAppData%\pip\Cache'
     PIP_TRUSTED_HOST: 'pypi.org pypi.python.org files.pythonhosted.org'
