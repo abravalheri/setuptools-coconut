@@ -113,6 +113,7 @@ conda_task:
     - conda create --no-default-packages -y -v -c conda-forge -p ${HOME}/conda wheel virtualenv build setuptools setuptools-scm pip tox pytest pytest-cov mypy coconut pyparsing pydantic tomli dataclasses importlib-metadata
   env:
     PATH: "${HOME}/conda/bin:${HOME}/.local/bin:${PATH}"
+    USING_CONDA: "true"
   prepare_script: *prepare
   clean_workspace_script: *clean
   build_script:

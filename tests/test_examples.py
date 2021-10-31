@@ -1,3 +1,4 @@
+import os
 import sys
 from itertools import chain, cycle
 from pathlib import Path
@@ -68,9 +69,13 @@ def build_project(path, monkeypatch, set_debug):
         m.chdir(path)
         if set_debug:
             m.setattr(debug, "DEBUG", True)
-        run_cmd([sys.executable, "-m", "build", "--no-isolation", "--wheel", "."])
+
+        cmd = [sys.executable, "-m", "build", "--no-isolation", "--wheel"]
         # ^--- we use `--no-isolation` because that allow us to use the version
         #      of `setuptools-coconut` under test
+        if os.getenv("USING_CONDA") == "true":
+            cmd.remove("--no-isolation")  # conda envs seem to struggle here
+        run_cmd(cmd)
 
 
 @pytest.mark.parametrize("example, set_debug", zip(examples(), cycle([False, True])))
@@ -83,7 +88,7 @@ def test_valid_examples(example, set_debug, monkeypatch):
     assert distibutions
     distribution_files = set(list_zip(distibutions[0]))
     files = {str(p.with_suffix(".py")) for p in coconut_files(path)}
-    files |= {str(p) for p in other_files(path)}
+    files |= {str(p.replace(os.path, "/")) for p in other_files(path)}
     try:
         assert distribution_files >= files
     except AssertionError:
