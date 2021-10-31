@@ -32,7 +32,7 @@ env:
     # This script is also used in Windows, so the shell is not POSIX
     - git config --global user.email "you@example.com"
     - git config --global user.name "Your Name"
-  clean_workspace_script:
+  clean_workspace_script: &clean
     # Avoid information carried from one run to the other
     - rm -rf .coverage junit-*.xml .tox
   # The following scripts are also used in Windows, be aware the shell is not POSIX
@@ -84,10 +84,6 @@ linux_mac_task:
       container: {image: "python:3.8-buster"}
     - name: test (Linux - 3.9)
       container: {image: "python:3.9-buster"}
-    - name: test (Linux - Anaconda)
-      container: {image: "continuumio/anaconda3:2021.05"}
-      extra_install_script:
-        - conda install -v --all -y -c conda-forge virtualenv build setuptools setuptools-scm pip tox
     - name: test (OS X)
       macos_instance: {image: "big-sur-xcode"}
       env:
@@ -101,7 +97,29 @@ linux_mac_task:
       install_script:
         - brew install python gnu-tar
         - brew cleanup
-  <<: *REGULAR_TASK_TEMPLATE
+
+
+conda_task:
+  name: test (Linux - Anaconda)
+  clone_script: *clone
+  container: {image: "continuumio/anaconda3:2021.05"}
+  pip_cache: *pip-cache
+  conda_cache:
+    folder: /opt/conda/pkgs
+  root_conda_cache:
+    folder: /root/.conda/pkgs
+  conda_install_script:
+    - conda info
+    - conda create --no-default-packages -y -v -c conda-forge -p ${HOME}/conda wheel virtualenv build setuptools setuptools-scm pip tox pytest pytest-cov mypy coconut pyparsing pydantic tomli dataclasses importlib-metadata
+  env:
+    PATH: "${HOME}/conda/bin:${HOME}/.local/bin:${PATH}"
+  prepare_script: *prepare
+  clean_workspace_script: *clean
+  build_script:
+    - python -m build --wheel
+  test_script:
+    - python -m pip install --no-deps dist/*.whl
+    - python -m pytest -vv -rfEx --durations 10 --color yes
 
 
 # If you find some problems with long paths on Windows,
