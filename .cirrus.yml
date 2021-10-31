@@ -39,7 +39,7 @@ env:
   build_script: &build
     - python -m tox -e build  # Ensure PEP517-style build works
   test_script: &test
-    - python -m tox -- -rfEx --durations 10 --color yes
+    - python -m tox -- -vv -rfEx --durations 10 --color yes
     # ^  tox is better if invoked as a module on Windows/OSX
 
 
@@ -87,7 +87,7 @@ linux_mac_task:
     - name: test (Linux - Anaconda)
       container: {image: "continuumio/anaconda3:2021.05"}
       extra_install_script:
-        - conda install -y -c conda-forge virtualenv build setuptools setuptools-scm pip tox
+        - conda install -v --all -y -c conda-forge virtualenv build setuptools setuptools-scm pip tox
     - name: test (OS X)
       macos_instance: {image: "big-sur-xcode"}
       env:
@@ -131,8 +131,8 @@ windows_task:
       git reset --hard %CIRRUS_CHANGE_IN_REPO%
     )
   windows_container:
-    image: "python:3.8-windowsservercore"
-    os_version: 2019
+    image: "python:3.9-windowsservercore-ltsc2022"
+    os_version: 2022
   env:
     # Single quotes are used bellow to escape Windows backslash and % (YAML restrictions).
     PYTHON_HOME: 'C:\Python'
