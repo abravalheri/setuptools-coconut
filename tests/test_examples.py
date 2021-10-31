@@ -96,8 +96,8 @@ def test_valid_examples(example, set_debug, monkeypatch):
     distibutions = list(path.glob("dist/*.whl"))
     assert distibutions
     distribution_files = set(list_zip(distibutions[0]))
-    files = {str(p.with_suffix(".py")) for p in coconut_files(path)}
-    files |= {str(p.replace(os.path, "/")) for p in other_files(path)}
+    files = {_norm(p.with_suffix(".py")) for p in coconut_files(path)}
+    files |= {_norm(p) for p in other_files(path)}
     try:
         assert distribution_files >= files
     except AssertionError:
@@ -122,7 +122,7 @@ def test_invalid_examples(example, set_debug, monkeypatch):
         # If the project manages to be build, no coconut file should be compiled
         distibutions = list(path.glob("dist/*.whl"))
         distribution_files = set(list_zip(distibutions[0]))
-        files = {str(p.with_suffix(".py")) for p in coconut_files(path)}
+        files = {_norm(p.with_suffix(".py")) for p in coconut_files(path)}
         compiled_and_included = distribution_files & files
         try:
             assert len(compiled_and_included) == 0
@@ -136,3 +136,7 @@ def test_invalid_examples(example, set_debug, monkeypatch):
         # Invalid files are expected to have validation errors
         error_text = (ex.stderr or "") + ex.stdout
         assert "validation error" in error_text
+
+
+def _norm(path):
+    return str(path).replace(os.pathsep, "/")
