@@ -95,7 +95,7 @@ def test_valid_examples(example, set_debug, monkeypatch):
 
     distibutions = list(path.glob("dist/*.whl"))
     assert distibutions
-    distribution_files = set(list_zip(distibutions[0]))
+    distribution_files = {_norm(p) for p in list_zip(distibutions[0])}
     files = {_norm(p.with_suffix(".py")) for p in coconut_files(path)}
     files |= {_norm(p) for p in other_files(path)}
     try:
@@ -104,6 +104,8 @@ def test_valid_examples(example, set_debug, monkeypatch):
         print("~_" * 40)
         print("Missing files:\n")
         print("\n".join(sorted(files - distribution_files)))
+        print("\nDistribution files:\n")
+        print("\n".join(sorted(distribution_files)))
         print("~_" * 40)
         raise
 
@@ -121,7 +123,7 @@ def test_invalid_examples(example, set_debug, monkeypatch):
         build_project(path, monkeypatch, set_debug)
         # If the project manages to be build, no coconut file should be compiled
         distibutions = list(path.glob("dist/*.whl"))
-        distribution_files = set(list_zip(distibutions[0]))
+        distribution_files = {_norm(p) for p in list_zip(distibutions[0])}
         files = {_norm(p.with_suffix(".py")) for p in coconut_files(path)}
         compiled_and_included = distribution_files & files
         try:
@@ -139,4 +141,4 @@ def test_invalid_examples(example, set_debug, monkeypatch):
 
 
 def _norm(path):
-    return str(path).replace(os.pathsep, "/")
+    return str(path).replace(os.pathsep, "/").replace("\\", "/")
