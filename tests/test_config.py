@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from textwrap import dedent
 
@@ -23,7 +24,8 @@ def test_build_paths(pyproject):
     """
     pyproject.write_text(dedent(example))
     cfg = CoconutConfig.from_file(pyproject)
-    assert cfg.build_paths() == {"src": "build/src", "pkg": "build/pkg"}
+    build_paths = {k: v.replace(os.sep, "/") for k, v in cfg.build_paths().items()}
+    assert build_paths == {"src": "build/src", "pkg": "build/pkg"}
 
 
 def test_args(pyproject):
