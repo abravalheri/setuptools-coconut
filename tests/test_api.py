@@ -42,13 +42,13 @@ class TestOtherFiles:
         ]
         for f in expected:
             assert f.exists()
-        assert other.files == list(map(str, expected))
+        assert sorted(list(other.files)) == sorted(list(map(str, expected)))
 
     def test_link_or_copy(self, tmp_path):
         mksrc(tmp_path)
         build = Path(tmp_path, "build")
         others = api.OtherFiles(str(tmp_path), "src")
-        given = list(others.link_or_copy(str(build)))
+        given = sorted(list(others.link_or_copy(str(build))))
 
         expected = [
             build / "pkg/subpkg1/data.txt",
@@ -56,7 +56,7 @@ class TestOtherFiles:
             build / "pkg/subpkg2/pymodule.py",
         ]
 
-        assert given == list(map(str, expected))
+        assert given == sorted(list(map(str, expected)))
 
         print("build", list(build.glob("**/*")))
         for f in expected:
@@ -83,7 +83,7 @@ class CompileFiles:
             "src/pkg/module3.py",
             "src/pkg/subpkg1/__init__.py",
         ]
-        assert included_files == expected
+        assert sorted(included_files) == sorted(expected)
         assert not (project_path / "src" / "src").exists()
 
     def test_build_dir(self, pyproject):
@@ -108,7 +108,7 @@ class CompileFiles:
             "build/src/pkg/subpkg2/__init__.py",
             "build/src/pkg/subpkg2/pymodule.py",
         ]
-        assert included_files == expected
+        assert sorted(included_files) == sorted(expected)
 
     def test_build_dir_as_src(self, pyproject):
         # Default config
