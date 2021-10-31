@@ -97,6 +97,7 @@ linux_mac_task:
       install_script:
         - brew install python gnu-tar
         - brew cleanup
+  <<: *REGULAR_TASK_TEMPLATE
 
 
 conda_task:

@@ -76,7 +76,15 @@ def build_project(path, monkeypatch, set_debug):
         if os.getenv("USING_CONDA") == "true":
             i = cmd.index("--wheel")
             cmd.insert(i, "--skip-dependency-check")  # conda env seem to struggle here
-        run_cmd(cmd)
+
+        try:
+            run_cmd(cmd)
+        except CalledProcessError:
+            if os.getenv("USING_CONDA") == "true":
+                msg = "Currently builds in conda try to install cPyparsing insistently."
+                msg += " This results in error :("
+                pytest.skip(msg)
+            raise
 
 
 @pytest.mark.parametrize("example, set_debug", zip(examples(), cycle([False, True])))
