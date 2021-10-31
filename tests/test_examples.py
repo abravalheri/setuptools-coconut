@@ -74,7 +74,8 @@ def build_project(path, monkeypatch, set_debug):
         # ^--- we use `--no-isolation` because that allow us to use the version
         #      of `setuptools-coconut` under test
         if os.getenv("USING_CONDA") == "true":
-            cmd.remove("--no-isolation")  # conda envs seem to struggle here
+            i = cmd.index("--wheel")
+            cmd.insert(i, "--skip-dependency-check")  # conda env seem to struggle here
         run_cmd(cmd)
 
 
